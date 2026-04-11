@@ -1,0 +1,251 @@
+{
+  "Logistic Regression": {
+    "accuracy": 0.8458,
+    "precision_weighted": 0.7153,
+    "recall_weighted": 0.8458,
+    "f1_weighted": 0.7751,
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        31
+      ],
+      [
+        0,
+        0,
+        349
+      ],
+      [
+        0,
+        0,
+        2084
+      ]
+    ],
+    "approach": "base"
+  },
+  "KNN": {
+    "accuracy": 0.8287,
+    "precision_weighted": 0.7364,
+    "recall_weighted": 0.8287,
+    "f1_weighted": 0.7726,
+    "confusion_matrix": [
+      [
+        0,
+        1,
+        30
+      ],
+      [
+        0,
+        9,
+        340
+      ],
+      [
+        0,
+        51,
+        2033
+      ]
+    ],
+    "approach": "base"
+  },
+  "Decision Tree": {
+    "accuracy": 0.8226,
+    "precision_weighted": 0.7499,
+    "recall_weighted": 0.8226,
+    "f1_weighted": 0.7771,
+    "confusion_matrix": [
+      [
+        0,
+        2,
+        29
+      ],
+      [
+        4,
+        21,
+        324
+      ],
+      [
+        4,
+        74,
+        2006
+      ]
+    ],
+    "approach": "base"
+  },
+  "Random Forest": {
+    "accuracy": 0.847,
+    "precision_weighted": 0.8073,
+    "recall_weighted": 0.847,
+    "f1_weighted": 0.781,
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        31
+      ],
+      [
+        0,
+        7,
+        342
+      ],
+      [
+        0,
+        4,
+        2080
+      ]
+    ],
+    "approach": "base"
+  },
+  "Logistic Regression (SMOTE)": {
+    "accuracy": 0.5678,
+    "precision_weighted": 0.7505,
+    "recall_weighted": 0.5678,
+    "f1_weighted": 0.6411,
+    "confusion_matrix": [
+      [
+        8,
+        3,
+        20
+      ],
+      [
+        64,
+        90,
+        195
+      ],
+      [
+        355,
+        428,
+        1301
+      ]
+    ],
+    "approach": "smote",
+    "roc_auc_ovr": 0.5253
+  },
+  "KNN (SMOTE)": {
+    "accuracy": 0.4923,
+    "precision_weighted": 0.7303,
+    "recall_weighted": 0.4923,
+    "f1_weighted": 0.5743,
+    "confusion_matrix": [
+      [
+        2,
+        11,
+        18
+      ],
+      [
+        45,
+        115,
+        189
+      ],
+      [
+        247,
+        741,
+        1096
+      ]
+    ],
+    "approach": "smote",
+    "roc_auc_ovr": 0.5015
+  },
+  "Decision Tree (SMOTE)": {
+    "accuracy": 0.599,
+    "precision_weighted": 0.759,
+    "recall_weighted": 0.599,
+    "f1_weighted": 0.6622,
+    "confusion_matrix": [
+      [
+        3,
+        7,
+        21
+      ],
+      [
+        39,
+        121,
+        189
+      ],
+      [
+        220,
+        512,
+        1352
+      ]
+    ],
+    "approach": "smote",
+    "roc_auc_ovr": 0.5522
+  },
+  "Random Forest (SMOTE)": {
+    "accuracy": 0.8097,
+    "precision_weighted": 0.7737,
+    "recall_weighted": 0.8097,
+    "f1_weighted": 0.7893,
+    "confusion_matrix": [
+      [
+        0,
+        6,
+        25
+      ],
+      [
+        1,
+        70,
+        278
+      ],
+      [
+        4,
+        155,
+        1925
+      ]
+    ],
+    "approach": "smote",
+    "roc_auc_ovr": 0.5955
+  },
+  "XGBoost (SMOTE)": {
+    "accuracy": 0.3584,
+    "precision_weighted": 0.7527,
+    "recall_weighted": 0.3584,
+    "f1_weighted": 0.4323,
+    "confusion_matrix": [
+      [
+        9,
+        14,
+        8
+      ],
+      [
+        49,
+        202,
+        98
+      ],
+      [
+        320,
+        1092,
+        672
+      ]
+    ],
+    "approach": "smote_xgboost",
+    "roc_auc_ovr": 0.5481
+  },
+  "Random Forest (Tuned)": {
+    "accuracy": 0.8109,
+    "precision_weighted": 0.7723,
+    "recall_weighted": 0.8109,
+    "f1_weighted": 0.7889,
+    "confusion_matrix": [
+      [
+        0,
+        5,
+        26
+      ],
+      [
+        1,
+        67,
+        281
+      ],
+      [
+        2,
+        151,
+        1931
+      ]
+    ],
+    "approach": "tuned_smote",
+    "best_params": {
+      "max_depth": null,
+      "n_estimators": 200
+    }
+  }
+}
