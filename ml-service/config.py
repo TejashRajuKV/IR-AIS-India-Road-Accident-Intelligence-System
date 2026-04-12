@@ -12,6 +12,7 @@ PROJECT_DIR = os.path.dirname(BASE_DIR)                    # project root
 
 DATA_PATH = os.path.join(PROJECT_DIR, "upload", "Road.csv")
 MODEL_DIR = os.path.join(BASE_DIR, "models")
+OUTPUT_DIR = os.path.join(PROJECT_DIR, "outputs")
 
 # ─── Training ─────────────────────────────────────────────────────────────────
 RANDOM_STATE = 42
@@ -32,3 +33,4 @@ LEAKAGE_COLS = [
 ]
 
 os.makedirs(MODEL_DIR, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)

@@ -1,44 +1,48 @@
 #!/usr/bin/env python3
 """
 IR-AIS ML Training Pipeline — Orchestrator
-Runs preprocessing, EDA, classification, and regression training.
-Each model is defined in its own file under classifiers/ and regressors/.
+Runs preprocessing, EDA, dimensionality reduction, clustering, 
+classification, and regression training.
 """
 
 import os
 import json
 import warnings
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 from collections import Counter
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import roc_curve, auc
 from imblearn.over_sampling import SMOTE
 import joblib
 
-from config import RANDOM_STATE, MODEL_DIR, TEST_SIZE
+from config import RANDOM_STATE, MODEL_DIR, OUTPUT_DIR, TEST_SIZE
 from preprocessing import load_and_preprocess
 from eda import generate_eda
 
 import classifiers
 from classifiers.base import evaluate as clf_evaluate, print_metrics as clf_print
-from classifiers import xgboost_clf
+from classifiers import xgboost_clf, random_forest, decision_tree, adaboost
 
 import regressors
 from regressors.base import evaluate as reg_evaluate, print_metrics as reg_print
+
+import clustering
+from clustering.base import evaluate_clustering, print_metrics as clust_print
+
+from dimensionality import pca
 
 warnings.filterwarnings("ignore")
 
 
 # ─── Classification Task ─────────────────────────────────────────────────────
-def train_classification(X, y_class, y_class_encoded, target_encoder):
+def train_classification(X_train, X_test, y_train, y_test, suffix=""):
     print("\n" + "=" * 60)
-    print("CLASSIFICATION TASK: Accident_severity")
+    print(f"CLASSIFICATION TASK: Accident_severity {suffix}")
     print("=" * 60)
 
-    # Split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y_class_encoded, test_size=TEST_SIZE,
-        random_state=RANDOM_STATE, stratify=y_class_encoded
-    )
     print(f"\n  Train size: {X_train.shape[0]}, Test size: {X_test.shape[0]}")
     print(f"  Class distribution (train): {Counter(y_train)}")
 
@@ -96,46 +100,26 @@ def train_classification(X, y_class, y_class_encoded, target_encoder):
     if f1 > best_f1:
         best_f1, best_clf_model, best_clf_name = f1, xgb_model, "XGBoost (SMOTE)"
 
-    # ── 3c. Hyperparameter Tuned ──
-    print("\n--- 3c. Hyperparameter Tuned (GridSearchCV + SMOTE) ---")
-
-    for mod in classifiers.TUNABLE_MODELS:
-        name = f"{mod.NAME} (Tuned)"
-        print(f"  Tuning {mod.NAME} with GridSearchCV...")
-        tuned_model, best_params = mod.build_tuned_model(
-            X_train_sm, y_train_sm, random_state=RANDOM_STATE
-        )
-        metrics, f1 = clf_evaluate(tuned_model, X_test, y_test, approach="tuned_smote")
-        metrics["best_params"] = best_params
-        clf_print(metrics)
-        metrics_all[name] = metrics
-
-        if f1 > best_f1:
-            best_f1, best_clf_model, best_clf_name = f1, tuned_model, name
-
     # ── Save best classifier ──
-    print(f"\n  ★ Best Classifier: {best_clf_name} (F1={best_f1:.4f})")
-    joblib.dump(best_clf_model, os.path.join(MODEL_DIR, "best_classifier.pkl"))
+    print(f"\n  * Best Classifier {suffix}: {best_clf_name} (F1={best_f1:.4f})")
+    
+    file_name = f"classification_metrics{'_pca' if 'PCA' in suffix else ''}.json"
+    joblib.dump(best_clf_model, os.path.join(MODEL_DIR, f"best_classifier{'_pca' if 'PCA' in suffix else ''}.pkl"))
 
-    # Save metrics
-    with open(os.path.join(MODEL_DIR, "classification_metrics.json"), "w") as f:
+    with open(os.path.join(MODEL_DIR, file_name), "w") as f:
         json.dump(metrics_all, f, indent=2)
 
-    print("  Classification metrics saved.")
     return metrics_all, best_clf_name, best_f1
 
 
 # ─── Regression Task ──────────────────────────────────────────────────────────
-def train_regression(X, y_regr):
+def train_regression(X_train, X_test, y_train, y_test, suffix=""):
     print("\n" + "=" * 60)
-    print("REGRESSION TASK: Number_of_casualties")
+    print(f"REGRESSION TASK: Number_of_casualties {suffix}")
     print("=" * 60)
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y_regr, test_size=TEST_SIZE, random_state=RANDOM_STATE
-    )
     print(f"\n  Train size: {X_train.shape[0]}, Test size: {X_test.shape[0]}")
-    print(f"  Target range: {y_regr.min()} - {y_regr.max()}, Mean: {y_regr.mean():.2f}")
+    print(f"  Target range: {y_train.min()} - {y_train.max()}, Mean: {y_train.mean():.2f}")
 
     metrics_all = {}
     best_r2 = -float("inf")
@@ -157,69 +141,176 @@ def train_regression(X, y_regr):
         if r2 > best_r2:
             best_r2, best_reg_model, best_reg_name = r2, model, name
 
-    # ── 4b. Hyperparameter Tuned ──
-    print("\n--- 4b. Hyperparameter Tuned (RandomizedSearchCV) ---")
-
-    for mod in regressors.TUNABLE_MODELS:
-        name = f"{mod.NAME} (Tuned)"
-        print(f"  Tuning {mod.NAME} Regressor...")
-        tuned_model, best_params = mod.build_tuned_model(
-            X_train, y_train, random_state=RANDOM_STATE
-        )
-        metrics, r2 = reg_evaluate(tuned_model, X_test, y_test, approach="tuned")
-        metrics["best_params"] = best_params
-        reg_print(metrics)
-        metrics_all[name] = metrics
-
-        if r2 > best_r2:
-            best_r2, best_reg_model, best_reg_name = r2, tuned_model, name
-
     # ── Save best regressor ──
-    print(f"\n  ★ Best Regressor: {best_reg_name} (R²={best_r2:.4f})")
-    joblib.dump(best_reg_model, os.path.join(MODEL_DIR, "best_regressor.pkl"))
+    print(f"\n  * Best Regressor {suffix}: {best_reg_name} (R²={best_r2:.4f})")
+    
+    file_name = f"regression_metrics{'_pca' if 'PCA' in suffix else ''}.json"
+    joblib.dump(best_reg_model, os.path.join(MODEL_DIR, f"best_regressor{'_pca' if 'PCA' in suffix else ''}.pkl"))
 
-    # Save metrics
-    with open(os.path.join(MODEL_DIR, "regression_metrics.json"), "w") as f:
+    with open(os.path.join(MODEL_DIR, file_name), "w") as f:
         json.dump(metrics_all, f, indent=2)
 
-    print("  Regression metrics saved.")
     return metrics_all, best_reg_name, best_r2
+
+
+# ─── Clustering Task ──────────────────────────────────────────────────────────
+def train_clustering(X):
+    print("\n" + "=" * 60)
+    print("CLUSTERING TASK: Unsupervised Target Inference")
+    print("=" * 60)
+    
+    metrics_all = {}
+    
+    for mod in clustering.MODELS:
+        name = mod.NAME
+        print(f"\n  Training {name}...")
+        model = mod.build_model(random_state=RANDOM_STATE)
+        
+        if name == "K-Means":
+            labels = model.fit_predict(X)
+        else:
+            labels = model.fit_predict(X)
+            
+        metrics = evaluate_clustering(X, labels, approach="base")
+        clust_print(metrics)
+        metrics_all[name] = metrics
+        
+    with open(os.path.join(MODEL_DIR, "clustering_metrics.json"), "w") as f:
+        json.dump(metrics_all, f, indent=2)
+        
+    return metrics_all
+
+
+# ─── Ensemble Comparison (Day9 Style) ─────────────────────────────────────────
+def compare_ensembles(X_train, X_test, y_train, y_test):
+    print("\n" + "=" * 60)
+    print("ENSEMBLE COMPARISON: DECISION TREE vs RANDOM FOREST vs ALL BOOSTING")
+    print("=" * 60)
+
+    models_to_compare = {
+        "Decision Tree": decision_tree.build_model(random_state=RANDOM_STATE),
+        "Random Forest": random_forest.build_model(random_state=RANDOM_STATE),
+        "AdaBoost": adaboost.build_model(random_state=RANDOM_STATE),
+        "XGBoost": xgboost_clf.build_model(random_state=RANDOM_STATE)
+    }
+
+    plt.figure(figsize=(10, 8))
+    
+    for name, model in models_to_compare.items():
+        print(f"  Evaluating {name} for comparison...")
+        model.fit(X_train, y_train)
+        
+        # We need probabilities for ROC, if target is multiclass, we use OvR conceptually
+        # But for ROC plotting typically we do binary. If our target is multi-class, we plot macro-average
+        try:
+            y_probs = model.predict_proba(X_test)
+            
+            # Simple check, if binary: probability of class 1. If multi-class, compute macro average AUC
+            n_classes = y_probs.shape[1]
+            if n_classes == 2:
+                y_prob_1 = y_probs[:, 1]
+                fpr, tpr, _ = roc_curve(y_test, y_prob_1)
+                roc_auc = auc(fpr, tpr)
+                plt.plot(fpr, tpr, label=f'{name} (AUC = {roc_auc:.2f})')
+            else:
+                # Approximate macro ROC for multi-class just to have a plot line
+                from sklearn.preprocessing import label_binarize
+                y_test_bin = label_binarize(y_test, classes=np.unique(y_test))
+                fpr, tpr, _ = roc_curve(y_test_bin.ravel(), y_probs.ravel())
+                roc_auc = auc(fpr, tpr)
+                plt.plot(fpr, tpr, label=f'{name} (Micro-AUC = {roc_auc:.2f})')
+                
+        except Exception as e:
+            print(f"    Skipping ROC for {name}: {str(e)}")
+
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve: Ensembles vs Trees')
+    plt.legend(loc="lower right")
+    
+    plot_path = os.path.join(OUTPUT_DIR, "ensemble_comparison_roc.png")
+    plt.savefig(plot_path, bbox_inches='tight', dpi=300)
+    plt.close()
+    
+    print(f"  Saved comparison plot to {plot_path}")
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 def main():
-    X, y_class, y_class_encoded, y_regr, target_encoder, label_encoders, feature_names = load_and_preprocess()
+    X_raw, y_class, y_class_encoded, y_regr, target_encoder, label_encoders, feature_names = load_and_preprocess()
 
     # EDA
-    generate_eda(X)
+    generate_eda(X_raw)
 
-    # Classification
-    cls_metrics, best_clf_name, best_clf_f1 = train_classification(
-        X, y_class, y_class_encoded, target_encoder
+    print("\n" + "=" * 60)
+    print("GLOBAL PREPROCESSING: Scaling Data")
+    print("=" * 60)
+    
+    # Scale Data Universal
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X_raw)
+    
+    joblib.dump(scaler, os.path.join(MODEL_DIR, "scaler.pkl"))
+
+    # Train/Test Splits
+    X_train, X_test, y_class_train, y_class_test = train_test_split(
+        X_scaled, y_class_encoded, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y_class_encoded
+    )
+    
+    X_train_r, X_test_r, y_regr_train, y_regr_test = train_test_split(
+        X_scaled, y_regr, test_size=TEST_SIZE, random_state=RANDOM_STATE
     )
 
-    # Regression
-    reg_metrics, best_reg_name, best_reg_r2 = train_regression(X, y_regr)
+    # ── PHASE 1: Baseline Models ──
+    cls_metrics, best_clf_name, best_clf_f1 = train_classification(X_train, X_test, y_class_train, y_class_test, "(Native Features)")
+    reg_metrics, best_reg_name, best_reg_r2 = train_regression(X_train_r, X_test_r, y_regr_train, y_regr_test, "(Native Features)")
 
-    # ── Final Summary ──
+    # ── PHASE 2: Dimensionality Reduction ──
     print("\n" + "=" * 60)
-    print("TRAINING COMPLETE — FINAL SUMMARY")
+    print("DIMENSIONALITY REDUCTION TASK: PCA")
     print("=" * 60)
+    # Fit PCA on scaled original data
+    X_pca, pca_model = pca.apply_pca(X_scaled, n_components=2)
+    joblib.dump(pca_model, os.path.join(MODEL_DIR, "pca_model.pkl"))
+    
+    plot_path = pca.save_pca_plot(X_pca, y_class_encoded, OUTPUT_DIR, target_encoder)
+    print(f"  PCA Variance Explained by 2 components: {sum(pca_model.explained_variance_ratio_):.4f}")
+    print(f"  Saved 2D configuration plot to {plot_path}")
 
-    print(f"\n  Dataset: {X.shape[0]} records, {X.shape[1]} features")
-    print(f"\n  ── Classification: Accident_severity ──")
-    print(f"     Best Model: {best_clf_name}")
-    print(f"     Best F1-Score (weighted): {best_clf_f1:.4f}")
-    for name, m in cls_metrics.items():
-        print(f"     {name}: Acc={m['accuracy']:.4f}, F1={m['f1_weighted']:.4f}")
+    X_train_pca, X_test_pca, y_class_train_pca, y_class_test_pca = train_test_split(
+        X_pca, y_class_encoded, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y_class_encoded
+    )
+    
+    X_train_r_pca, X_test_r_pca, y_regr_train_pca, y_regr_test_pca = train_test_split(
+        X_pca, y_regr, test_size=TEST_SIZE, random_state=RANDOM_STATE
+    )
 
-    print(f"\n  ── Regression: Number_of_casualties ──")
-    print(f"     Best Model: {best_reg_name}")
-    print(f"     Best R² Score: {best_reg_r2:.4f}")
-    for name, m in reg_metrics.items():
-        print(f"     {name}: MAE={m['mae']:.4f}, R²={m['r2']:.4f}")
+    # ── PHASE 3: PCA Reduced Models ──
+    train_classification(X_train_pca, X_test_pca, y_class_train_pca, y_class_test_pca, "(PCA Reduced)")
+    train_regression(X_train_r_pca, X_test_r_pca, y_regr_train_pca, y_regr_test_pca, "(PCA Reduced)")
 
-    # ── Save best model names for API routes ──
+    # ── PHASE 4: Clustering ──
+    train_clustering(X_scaled)
+
+    # ── PHASE 5: Ensemble Comparisons ──
+    compare_ensembles(X_train, X_test, y_class_train, y_class_test)
+
+    # ── Generative Report Trigger ──
+    print("\n" + "=" * 60)
+    print("Generating Analytical Post-run Report...")
+    print("=" * 60)
+    
+    try:
+        import report_generator
+        report_generator.generate_final_report()
+        print("  Successfully generated project_analysis_report.md")
+    except Exception as e:
+        print(f"  Warning: Report generation failed: {str(e)}")
+
+    # Save summary 
     best_models_info = {
         "best_classifier_name": best_clf_name,
         "best_classifier_f1": round(best_clf_f1, 4),
@@ -229,27 +320,7 @@ def main():
     with open(os.path.join(MODEL_DIR, "best_models.json"), "w") as f:
         json.dump(best_models_info, f, indent=2)
 
-    # List all output files
-    print(f"\n  ── Output Files ──")
-    output_files = [
-        "label_encoders.pkl",
-        "feature_names.pkl",
-        "target_encoder.pkl",
-        "best_classifier.pkl",
-        "best_regressor.pkl",
-        "classification_metrics.json",
-        "regression_metrics.json",
-        "eda_data.json",
-        "best_models.json",
-    ]
-    for f in output_files:
-        path = os.path.join(MODEL_DIR, f)
-        exists = os.path.exists(path)
-        size = os.path.getsize(path) if exists else 0
-        print(f"     {'✓' if exists else '✗'} {f} ({size:,} bytes)")
-
-    print("\n  Done!")
-
+    print("\nTraining Pipeline Complete!")
 
 if __name__ == "__main__":
     main()

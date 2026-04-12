@@ -13,30 +13,32 @@
     "r2": 0.0577,
     "approach": "base"
   },
+  "Lasso": {
+    "mae": 0.7691,
+    "mse": 1.1248,
+    "rmse": 1.0606,
+    "r2": -0.0018,
+    "approach": "base"
+  },
+  "SVR": {
+    "mae": 0.6217,
+    "mse": 1.1826,
+    "rmse": 1.0875,
+    "r2": -0.0533,
+    "approach": "base"
+  },
   "Decision Tree": {
-    "mae": 0.6475,
-    "mse": 1.0112,
-    "rmse": 1.0056,
-    "r2": 0.0993,
+    "mae": 0.6459,
+    "mse": 1.0064,
+    "rmse": 1.0032,
+    "r2": 0.1036,
     "approach": "base"
   },
   "Random Forest": {
-    "mae": 0.6469,
-    "mse": 0.8205,
-    "rmse": 0.9058,
-    "r2": 0.2692,
+    "mae": 0.6468,
+    "mse": 0.8203,
+    "rmse": 0.9057,
+    "r2": 0.2694,
     "approach": "base"
-  },
-  "Random Forest (Tuned)": {
-    "mae": 0.652,
-    "mse": 0.8557,
-    "rmse": 0.925,
-    "r2": 0.2379,
-    "approach": "tuned",
-    "best_params": {
-      "n_estimators": 100,
-      "min_samples_split": 2,
-      "max_depth": 10
-    }
   }
 }

@@ -1,0 +1,44 @@
+{
+  "Linear Regression": {
+    "mae": 0.7675,
+    "mse": 1.1262,
+    "rmse": 1.0612,
+    "r2": -0.003,
+    "approach": "base"
+  },
+  "Ridge Regression": {
+    "mae": 0.7675,
+    "mse": 1.1262,
+    "rmse": 1.0612,
+    "r2": -0.003,
+    "approach": "base"
+  },
+  "Lasso": {
+    "mae": 0.7691,
+    "mse": 1.1248,
+    "rmse": 1.0606,
+    "r2": -0.0018,
+    "approach": "base"
+  },
+  "SVR": {
+    "mae": 0.6186,
+    "mse": 1.3572,
+    "rmse": 1.165,
+    "r2": -0.2089,
+    "approach": "base"
+  },
+  "Decision Tree": {
+    "mae": 0.7521,
+    "mse": 1.2117,
+    "rmse": 1.1008,
+    "r2": -0.0792,
+    "approach": "base"
+  },
+  "Random Forest": {
+    "mae": 0.7596,
+    "mse": 1.2251,
+    "rmse": 1.1069,
+    "r2": -0.0912,
+    "approach": "base"
+  }
+}
