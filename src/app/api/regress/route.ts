@@ -41,10 +41,25 @@ print(json.dumps(result))
     fs.unlinkSync(tmpFile);
 
     const prediction = JSON.parse(result.trim());
+
+    // Read best model name dynamically
+    let modelName = "Best Regressor";
+    try {
+      const bestModels = JSON.parse(
+        fs.readFileSync(
+          path.join(process.cwd(), "ml-service/models/best_models.json"),
+          "utf-8"
+        )
+      );
+      modelName = bestModels.best_regressor_name || modelName;
+    } catch {
+      // Fall back to default name if file doesn't exist
+    }
+
     return NextResponse.json({
       predicted_casualties: prediction.prediction_rounded,
       predicted_casualties_float: prediction.prediction,
-      model: "Random Forest",
+      model: modelName,
       input_features: body,
       timestamp: new Date().toISOString(),
     });

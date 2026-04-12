@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import joblib
 
-MODEL_DIR = "/home/z/my-project/ml-service/models"
+from config import MODEL_DIR
 
 
 def _load_artifacts():
@@ -130,5 +130,4 @@ if __name__ == "__main__":
     print("      'Age_band_of_driver': '18-30',")
     print("      'Sex_of_driver': 'Male',")
     print("      'Hour_of_Day': 17,")
-    print("      ...")
-    print("  }")
+    print("      ...}")

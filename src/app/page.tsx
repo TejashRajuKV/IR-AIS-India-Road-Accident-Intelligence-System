@@ -28,23 +28,23 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/frontend/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+} from "@/frontend/components/ui/select";
+import { Button } from "@/frontend/components/ui/button";
+import { Label } from "@/frontend/components/ui/label";
+import { Badge } from "@/frontend/components/ui/badge";
+import { Separator } from "@/frontend/components/ui/separator";
+import { Skeleton } from "@/frontend/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/frontend/components/ui/alert";
+import { Progress } from "@/frontend/components/ui/progress";
+import { Input } from "@/frontend/components/ui/input";
+import { cn } from "@/frontend/lib/utils";
 import {
   BarChart3,
   BrainCircuit,
@@ -79,7 +79,7 @@ import {
   Calendar,
   Route,
 } from "lucide-react";
-import { ALL_FEATURE_OPTIONS, ALL_FEATURES } from "@/lib/feature-options";
+import { ALL_FEATURE_OPTIONS, ALL_FEATURES } from "@/frontend/lib/feature-options";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -1403,7 +1403,7 @@ const fieldGroups = [
     color: "text-emerald-400",
     borderColor: "border-l-emerald-400",
     bgColor: "bg-emerald-500/15 text-emerald-400",
-    fields: ["Type_of_vehicle", "Owner_of_vehicle", "Service_year_of_vehicle", "Defect_of_vehicle"],
+    fields: ["Type_of_vehicle", "Owner_of_vehicle", "Service_year_of_vehicle", "Defect_of_vehicle", "Number_of_vehicles_involved"],
   },
   {
     title: "Road & Environment",
@@ -1419,7 +1419,7 @@ const fieldGroups = [
     color: "text-red-400",
     borderColor: "border-l-red-400",
     bgColor: "bg-red-500/15 text-red-400",
-    fields: ["Type_of_collision", "Vehicle_movement", "Pedestrian_movement", "Cause_of_accident"],
+    fields: ["Type_of_collision", "Vehicle_movement", "Pedestrian_movement", "Cause_of_accident", "Hour_of_Day"],
   },
 ];
 
@@ -1565,28 +1565,41 @@ function LivePredictorTab() {
                         {group.fields.map((key) => {
                           const fieldDef = ALL_FEATURE_OPTIONS[key];
                           if (!fieldDef) return null;
+                          const isNumeric = fieldDef.type === "number";
                           return (
                             <div key={key} className="space-y-1.5">
                               <Label className="text-xs font-medium text-muted-foreground">
                                 {fieldDef.label}
                               </Label>
-                              <Select
-                                value={formData[key] || ""}
-                                onValueChange={(v) => handleChange(key, v)}
-                              >
-                                <SelectTrigger className="w-full bg-card border-border/50 h-9">
-                                  <SelectValue
-                                    placeholder={`Select ${fieldDef.label.toLowerCase()}`}
-                                  />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {fieldDef.options.map((opt: string) => (
-                                    <SelectItem key={opt} value={opt}>
-                                      {opt}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              {isNumeric ? (
+                                <Input
+                                  type="number"
+                                  min={fieldDef.min}
+                                  max={fieldDef.max}
+                                  placeholder={fieldDef.placeholder || `Enter ${fieldDef.label.toLowerCase()}`}
+                                  value={formData[key] || ""}
+                                  onChange={(e) => handleChange(key, e.target.value)}
+                                  className="w-full bg-card border-border/50 h-9"
+                                />
+                              ) : (
+                                <Select
+                                  value={formData[key] || ""}
+                                  onValueChange={(v) => handleChange(key, v)}
+                                >
+                                  <SelectTrigger className="w-full bg-card border-border/50 h-9">
+                                    <SelectValue
+                                      placeholder={`Select ${fieldDef.label.toLowerCase()}`}
+                                    />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {fieldDef.options.map((opt: string) => (
+                                      <SelectItem key={opt} value={opt}>
+                                        {opt}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
                             </div>
                           );
                         })}
