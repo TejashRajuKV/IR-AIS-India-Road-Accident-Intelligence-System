@@ -209,15 +209,16 @@ function StatCard({ icon: Icon, label, value, color, gradient }: {
   );
 }
 
-function ChartCard({ title, description, icon: Icon, accentColor, children }: {
+function ChartCard({ title, description, icon: Icon, accentColor, children, className }: {
   title: string;
   description?: string;
   icon?: React.ComponentType<{ className?: string }>;
   accentColor?: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="fp-card fp-card-hover min-h-full flex flex-col">
+    <div className={cn("fp-card fp-card-hover min-h-full flex flex-col", className)}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           {Icon && (
@@ -795,7 +796,7 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
       </Card>
 
       {/* Radar Chart + F1 Bar Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Radar Chart - Top 4 Models */}
         <ChartCard
           title="Metric Overview"
@@ -803,58 +804,61 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
           icon={Target}
           accentColor="violet"
         >
-          <ResponsiveContainer width="100%" height={350}>
-            <RadarChart data={radarData} cx="50%" cy="50%" outerRadius={100}>
-              <PolarGrid stroke="#000" opacity={0.1} />
-              <PolarAngleAxis dataKey="metric" tick={{ ...axisTickStyle, fontSize: 10 }} />
-              <PolarRadiusAxis tick={{ fill: "#000", fontSize: 9, opacity: 0.3 }} domain={[0, 100]} axisLine={false} />
-              {topModels.map((m, i) => (
-                <Radar
-                   key={m.name}
-                   name={m.name.length > 18 ? m.name.slice(0, 16) + "…" : m.name}
-                   dataKey={m.name.length > 18 ? m.name.slice(0, 16) + "…" : m.name}
-                   stroke={radarColors[i]}
-                   fill={radarColors[i]}
-                   fillOpacity={0.1}
-                   strokeWidth={3}
-                 />
-              ))}
-              <Legend 
-                wrapperStyle={{ paddingTop: 20, fontWeight: 700, fontSize: 10, textTransform: 'uppercase' }} 
-                verticalAlign="bottom"
-              />
-              <Tooltip contentStyle={tooltipStyle} />
-            </RadarChart>
-          </ResponsiveContainer>
+          <div className="h-[450px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radarData} cx="50%" cy="50%" outerRadius={150}>
+                <PolarGrid stroke="#000" opacity={0.1} />
+                <PolarAngleAxis dataKey="metric" tick={{ ...axisTickStyle, fontSize: 12 }} />
+                <PolarRadiusAxis tick={{ fill: "#000", fontSize: 10, opacity: 0.3 }} domain={[0, 100]} axisLine={false} />
+                {topModels.map((m, i) => (
+                  <Radar
+                     key={m.name}
+                     name={m.name.length > 18 ? m.name.slice(0, 16) + "…" : m.name}
+                     dataKey={m.name.length > 18 ? m.name.slice(0, 16) + "…" : m.name}
+                     stroke={radarColors[i]}
+                     fill={radarColors[i]}
+                     fillOpacity={0.1}
+                     strokeWidth={3}
+                   />
+                ))}
+                <Legend 
+                  wrapperStyle={{ paddingTop: 20, fontWeight: 700, fontSize: 12, textTransform: 'uppercase' }} 
+                  verticalAlign="bottom"
+                />
+                <Tooltip contentStyle={tooltipStyle} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
         </ChartCard>
 
-        {/* F1 Score Comparison Chart - takes 2 cols */}
+        {/* F1 Score Comparison Chart */}
         <ChartCard
           title="Class Performance Breakdown"
           description="Comparison of Accuracy, Precision, Recall & F1 (%)"
           icon={BarChart3}
           accentColor="emerald"
-          className="lg:col-span-2"
         >
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={f1ChartData} layout="vertical" margin={{ left: 20, right: 30 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ebdec5" horizontal={false} />
-              <XAxis type="number" tick={axisTickStyle} domain={[0, 100]} axisLine={{stroke: '#000'}} />
-              <YAxis
-                dataKey="name"
-                type="category"
-                tick={{ ...axisTickStyle, fontSize: 10 }}
-                width={160}
-                axisLine={{stroke: '#000'}}
-              />
-              <Tooltip contentStyle={tooltipStyle} formatter={(val: number) => `${val}%`} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
-              <Legend wrapperStyle={{ paddingTop: 10, fontWeight: 700, fontSize: 11, textTransform: 'uppercase' }} />
-              <Bar dataKey="F1" fill="#6bc4b3" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={1.5} />
-              <Bar dataKey="Accuracy" fill="#4a6fa5" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={1.5} />
-              <Bar dataKey="Precision" fill="#d4a843" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={1.5} />
-              <Bar dataKey="Recall" fill="#e05a47" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={1.5} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="h-[450px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={f1ChartData} layout="vertical" margin={{ left: 20, right: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ebdec5" horizontal={false} />
+                <XAxis type="number" tick={axisTickStyle} domain={[0, 100]} axisLine={{stroke: '#000'}} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  tick={{ ...axisTickStyle, fontSize: 11 }}
+                  width={160}
+                  axisLine={{stroke: '#000'}}
+                />
+                <Tooltip contentStyle={tooltipStyle} formatter={(val: number) => `${val}%`} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
+                <Legend wrapperStyle={{ paddingTop: 10, fontWeight: 700, fontSize: 12, textTransform: 'uppercase' }} />
+                <Bar dataKey="F1" fill="#6bc4b3" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={1.5} />
+                <Bar dataKey="Accuracy" fill="#4a6fa5" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={1.5} />
+                <Bar dataKey="Precision" fill="#d4a843" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={1.5} />
+                <Bar dataKey="Recall" fill="#e05a47" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={1.5} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </ChartCard>
       </div>
 
