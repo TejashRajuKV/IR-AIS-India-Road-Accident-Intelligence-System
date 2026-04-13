@@ -22,13 +22,13 @@
       ]
     ],
     "approach": "base",
-    "roc_auc_ovr": 0.5879
+    "roc_auc_ovr": 0.588
   },
   "KNN": {
-    "accuracy": 0.83,
-    "precision_weighted": 0.7357,
-    "recall_weighted": 0.83,
-    "f1_weighted": 0.7727,
+    "accuracy": 0.8295,
+    "precision_weighted": 0.7421,
+    "recall_weighted": 0.8295,
+    "f1_weighted": 0.7744,
     "confusion_matrix": [
       [
         0,
@@ -37,17 +37,67 @@
       ],
       [
         0,
-        8,
-        341
+        11,
+        338
       ],
       [
-        0,
-        47,
-        2037
+        3,
+        48,
+        2033
       ]
     ],
     "approach": "base",
-    "roc_auc_ovr": 0.514
+    "roc_auc_ovr": 0.5389
+  },
+  "SVM": {
+    "accuracy": 0.8458,
+    "precision_weighted": 0.7153,
+    "recall_weighted": 0.8458,
+    "f1_weighted": 0.7751,
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        31
+      ],
+      [
+        0,
+        0,
+        349
+      ],
+      [
+        0,
+        0,
+        2084
+      ]
+    ],
+    "approach": "base",
+    "roc_auc_ovr": 0.5786
+  },
+  "Naive Bayes": {
+    "accuracy": 0.0718,
+    "precision_weighted": 0.7137,
+    "recall_weighted": 0.0718,
+    "f1_weighted": 0.1102,
+    "confusion_matrix": [
+      [
+        30,
+        0,
+        1
+      ],
+      [
+        307,
+        11,
+        31
+      ],
+      [
+        1905,
+        43,
+        136
+      ]
+    ],
+    "approach": "base",
+    "roc_auc_ovr": 0.5141
   },
   "Decision Tree": {
     "accuracy": 0.8226,
@@ -97,160 +147,231 @@
       ]
     ],
     "approach": "base",
-    "roc_auc_ovr": 0.651
+    "roc_auc_ovr": 0.6513
   },
-  "Logistic Regression (SMOTE)": {
-    "accuracy": 0.5674,
-    "precision_weighted": 0.7492,
-    "recall_weighted": 0.5674,
-    "f1_weighted": 0.6404,
-    "confusion_matrix": [
-      [
-        8,
-        3,
-        20
-      ],
-      [
-        64,
-        88,
-        197
-      ],
-      [
-        354,
-        428,
-        1302
-      ]
-    ],
-    "approach": "smote",
-    "roc_auc_ovr": 0.5255
-  },
-  "KNN (SMOTE)": {
-    "accuracy": 0.4854,
-    "precision_weighted": 0.7288,
-    "recall_weighted": 0.4854,
-    "f1_weighted": 0.5681,
-    "confusion_matrix": [
-      [
-        2,
-        11,
-        18
-      ],
-      [
-        44,
-        117,
-        188
-      ],
-      [
-        250,
-        757,
-        1077
-      ]
-    ],
-    "approach": "smote",
-    "roc_auc_ovr": 0.5012
-  },
-  "Decision Tree (SMOTE)": {
-    "accuracy": 0.6144,
-    "precision_weighted": 0.7547,
-    "recall_weighted": 0.6144,
-    "f1_weighted": 0.6726,
-    "confusion_matrix": [
-      [
-        3,
-        5,
-        23
-      ],
-      [
-        37,
-        107,
-        205
-      ],
-      [
-        230,
-        450,
-        1404
-      ]
-    ],
-    "approach": "smote",
-    "roc_auc_ovr": 0.5253
-  },
-  "Random Forest (SMOTE)": {
-    "accuracy": 0.8056,
-    "precision_weighted": 0.7671,
-    "recall_weighted": 0.8056,
-    "f1_weighted": 0.7839,
+  "AdaBoost": {
+    "accuracy": 0.8458,
+    "precision_weighted": 0.7153,
+    "recall_weighted": 0.8458,
+    "f1_weighted": 0.7751,
     "confusion_matrix": [
       [
         0,
-        5,
-        26
+        0,
+        31
       ],
       [
-        1,
-        62,
-        286
+        0,
+        0,
+        349
       ],
       [
-        5,
-        156,
-        1923
+        0,
+        0,
+        2084
       ]
     ],
-    "approach": "smote",
-    "roc_auc_ovr": 0.6003
+    "approach": "base",
+    "roc_auc_ovr": 0.5902
   },
-  "XGBoost (SMOTE)": {
-    "accuracy": 0.3998,
-    "precision_weighted": 0.7602,
-    "recall_weighted": 0.3998,
-    "f1_weighted": 0.4776,
+  "Logistic Regression (SMOTE)": {
+    "accuracy": 0.4322,
+    "precision_weighted": 0.7671,
+    "recall_weighted": 0.4322,
+    "f1_weighted": 0.5361,
     "confusion_matrix": [
       [
-        8,
-        14,
+        12,
+        10,
         9
       ],
       [
-        40,
-        203,
-        106
+        116,
+        112,
+        121
       ],
       [
-        308,
-        1002,
-        774
+        598,
+        545,
+        941
       ]
     ],
-    "approach": "smote_xgboost",
-    "roc_auc_ovr": 0.5602
+    "approach": "smote",
+    "roc_auc_ovr": 0.5595
   },
-  "Random Forest (Tuned)": {
-    "accuracy": 0.8093,
-    "precision_weighted": 0.7696,
-    "recall_weighted": 0.8093,
-    "f1_weighted": 0.7866,
+  "KNN (SMOTE)": {
+    "accuracy": 0.5223,
+    "precision_weighted": 0.7506,
+    "recall_weighted": 0.5223,
+    "f1_weighted": 0.5963,
+    "confusion_matrix": [
+      [
+        4,
+        9,
+        18
+      ],
+      [
+        22,
+        159,
+        168
+      ],
+      [
+        218,
+        742,
+        1124
+      ]
+    ],
+    "approach": "smote",
+    "roc_auc_ovr": 0.522
+  },
+  "SVM (SMOTE)": {
+    "accuracy": 0.6826,
+    "precision_weighted": 0.748,
+    "recall_weighted": 0.6826,
+    "f1_weighted": 0.7115,
     "confusion_matrix": [
       [
         0,
-        5,
-        26
+        8,
+        23
+      ],
+      [
+        10,
+        94,
+        245
+      ],
+      [
+        51,
+        445,
+        1588
+      ]
+    ],
+    "approach": "smote",
+    "roc_auc_ovr": 0.5628
+  },
+  "Naive Bayes (SMOTE)": {
+    "accuracy": 0.1047,
+    "precision_weighted": 0.7501,
+    "recall_weighted": 0.1047,
+    "f1_weighted": 0.1644,
+    "confusion_matrix": [
+      [
+        30,
+        0,
+        1
+      ],
+      [
+        293,
+        20,
+        36
+      ],
+      [
+        1807,
+        69,
+        208
+      ]
+    ],
+    "approach": "smote",
+    "roc_auc_ovr": 0.5006
+  },
+  "Decision Tree (SMOTE)": {
+    "accuracy": 0.7143,
+    "precision_weighted": 0.7584,
+    "recall_weighted": 0.7143,
+    "f1_weighted": 0.7345,
+    "confusion_matrix": [
+      [
+        6,
+        3,
+        22
+      ],
+      [
+        33,
+        60,
+        256
+      ],
+      [
+        183,
+        207,
+        1694
+      ]
+    ],
+    "approach": "smote",
+    "roc_auc_ovr": 0.5872
+  },
+  "Random Forest (SMOTE)": {
+    "accuracy": 0.8429,
+    "precision_weighted": 0.777,
+    "recall_weighted": 0.8429,
+    "f1_weighted": 0.7858,
+    "confusion_matrix": [
+      [
+        0,
+        2,
+        29
+      ],
+      [
+        0,
+        17,
+        332
       ],
       [
         1,
-        63,
-        285
-      ],
-      [
-        4,
-        149,
-        1931
+        23,
+        2060
       ]
     ],
-    "approach": "tuned_smote",
-    "roc_auc_ovr": 0.6073,
-    "best_params": {
-      "max_depth": null,
-      "n_estimators": 200
-    }
+    "approach": "smote",
+    "roc_auc_ovr": 0.631
+  },
+  "AdaBoost (SMOTE)": {
+    "accuracy": 0.5998,
+    "precision_weighted": 0.7587,
+    "recall_weighted": 0.5998,
+    "f1_weighted": 0.6639,
+    "confusion_matrix": [
+      [
+        4,
+        15,
+        12
+      ],
+      [
+        49,
+        104,
+        196
+      ],
+      [
+        225,
+        489,
+        1370
+      ]
+    ],
+    "approach": "smote",
+    "roc_auc_ovr": 0.5718
+  },
+  "XGBoost (SMOTE)": {
+    "accuracy": 0.5386,
+    "precision_weighted": 0.7603,
+    "recall_weighted": 0.5386,
+    "f1_weighted": 0.6104,
+    "confusion_matrix": [
+      [
+        7,
+        8,
+        16
+      ],
+      [
+        28,
+        162,
+        159
+      ],
+      [
+        185,
+        741,
+        1158
+      ]
+    ],
+    "approach": "smote_xgboost",
+    "roc_auc_ovr": 0.5828
   }
 }

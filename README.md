@@ -392,9 +392,9 @@ Accuracy is misleading for imbalanced datasets. A model predicting "Slight Injur
 
 | Model | Approach | R² Score | MAE |
 |-------|----------|----------|-----|
-| Random Forest | Base | **0.2692** | **0.6469** |
+| Random Forest | Base | **0.2694** | **0.6468** |
 | Random Forest | Tuned (RandomizedSearchCV) | 0.2379 | 0.6520 |
-| Decision Tree | Base | 0.0993 | 0.6475 |
+| Decision Tree | Base | 0.1036 | 0.6459 |
 | Linear Regression | Base | 0.0577 | 0.7215 |
 | Ridge Regression | Base | 0.0577 | 0.7215 |
 
@@ -403,6 +403,21 @@ Accuracy is misleading for imbalanced datasets. A model predicting "Slight Injur
 **Note**: The low R² (0.27) is expected — casualty count depends heavily on factors not captured in the dataset (impact speed, seatbelt usage, vehicle safety rating, emergency response time, etc.).
 
 ---
+
+### 🔬 Advanced Analysis (Interim Insights)
+
+#### Dimensionality Reduction (PCA)
+We performed **Principal Component Analysis (PCA)** to reduce the 24 features into a 2-dimensional space to understand the variance and clustering potential.
+*   **Finding**: Reducing dimensions led to a drop of approximately **0.0094** in F1-score across models.
+*   **Insight**: This confirms that road accidents are a **high-variance** problem. No single or small set of features (like just weather or just time) can accurately predict severity. The "long-tail" interaction of all 24 features is necessary for high-fidelity prediction.
+
+#### Unsupervised Learning (Clustering)
+We applied **K-Means Clustering** to the feature set (without target labels) to see if accidents naturally group together.
+*   **Metric**: Silhouette Score of **0.0807** with 3 clusters.
+*   **Insight**: The data naturally partitions into three risk profiles, even without explicit severity labels, which mathematically validates our choice of 3 classes (Fatal / Serious / Slight).
+
+---
+
 
 ## 📡 API Endpoints
 

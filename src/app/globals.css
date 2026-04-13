@@ -145,6 +145,11 @@
   box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
 }
 
+.fp-button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
+}
+
 .fp-button:active {
   transform: translate(2px, 2px);
   box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 1);
@@ -174,11 +179,12 @@
 
 /* Editorial Headlines */
 .editorial-title {
-  @apply text-4xl md:text-6xl font-serif tracking-tight leading-tight;
+  @apply font-serif tracking-tighter leading-[1.05];
+  font-size: clamp(2.5rem, 8vw, 7rem);
 }
 
 .editorial-subtitle {
-  @apply text-lg md:text-xl font-sans text-muted-foreground uppercase tracking-widest;
+  @apply text-base md:text-lg font-sans text-muted-foreground uppercase tracking-[0.3em] font-bold;
 }
 
 /* ── Legacy Support / Adaptation ── */
@@ -201,8 +207,26 @@
 
 /* ── Animations ── */
 
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-on-scroll.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.parallax-bg {
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 .animate-fade-in-up {
-  animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes fadeSlideUp {
@@ -238,5 +262,30 @@
   padding: 0.75rem;
   border-radius: 0.75rem;
   box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+}
+/* ── Pathway Line ── */
+.path-line {
+  stroke: #1a1a1a;
+  stroke-width: 2;
+  stroke-dasharray: 8 8;
+  fill: none;
+  stroke-linecap: round;
+  filter: drop-shadow(2px 2px 0px rgba(107, 196, 179, 0.4));
+}
+
+@keyframes drawPath {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-draw-path {
+  stroke-dashoffset: 1000;
+  animation: drawPath 5s linear infinite;
+}
+
+/* Sticker/Badge Style */
+.fp-sticker {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 bg-white border-2 border-black rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-[3px_3px_0px_0px_rgba(0,0,0,1)];
 }
 

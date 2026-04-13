@@ -80,6 +80,13 @@ import {
   Route,
 } from "lucide-react";
 import { ALL_FEATURE_OPTIONS, ALL_FEATURES } from "@/frontend/lib/feature-options";
+import { LandingHero } from "@/frontend/components/LandingHero";
+import { ScrollPathway, CustomPathway } from "@/frontend/components/PathwayLine";
+import { NarrativeJourney } from "@/frontend/components/NarrativeJourney";
+import { FloatingSafeRoadsCoin } from "@/frontend/components/FloatingSafeRoadsCoin";
+import { FooterIllustration } from "@/frontend/components/FooterIllustration";
+import Image from "next/image";
+import { motion } from "framer-motion";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -464,30 +471,35 @@ function DashboardTab() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full -mr-32 -mt-32 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-secondary/40 rounded-full -ml-24 -mb-24 blur-3xl" />
         
-        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-12">
           <div className="max-w-2xl">
             <div className="flex items-center gap-3 text-black font-bold uppercase tracking-[0.2em] text-xs mb-6">
               <Activity className="h-4 w-4 text-primary" />
               <span>Exploratory Data Analysis</span>
-              <div className="h-px w-12 bg-black/20" />
+              <div className="h-px w-12 bg-black/10" />
             </div>
-            <h2 className="editorial-title mb-6">
-              Road Accident <br/>
-              <span className="text-primary italic">Intelligence</span> Dashboard.
+            <h2 className="editorial-title mb-6 leading-[1.1]">
+              Deciphering the <br/>
+              <span className="text-primary italic">Geometry</span> of Risk.
             </h2>
             <p className="text-lg font-medium text-black/60 max-w-lg leading-relaxed">
-              Analyzing <span className="text-black font-bold underline decoration-primary decoration-2 underline-offset-4">{edaData.total_records.toLocaleString()}</span> road accident records across India to identify critical patterns.
+              Analyzing <span className="text-black font-bold underline decoration-primary decoration-4 underline-offset-4">{edaData.total_records.toLocaleString()}</span> road accident records across India to identify critical patterns.
             </p>
           </div>
           
-          <div className="flex items-center gap-4">
-             <div className="fp-card group bg-secondary py-4 px-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                <span className="block text-[10px] uppercase font-bold tracking-widest text-black/40 mb-1">Status</span>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-sm font-bold">Live System</span>
-                </div>
-             </div>
+          <div className="relative w-full md:w-[350px] h-[250px] animate-fade-in-up">
+            <div className="absolute inset-0 border-2 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
+               <Image 
+                 src="/hero-illustration.png" 
+                 alt="Analysis Illustration" 
+                 fill 
+                 className="object-cover opacity-80"
+               />
+            </div>
+            {/* Sticker pop-out */}
+            <div className="absolute -top-4 -right-4 fp-sticker bg-primary whitespace-nowrap">
+               Live Data Feed
+            </div>
           </div>
         </div>
       </section>
@@ -774,26 +786,28 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
       </div>
 
       {/* Best Model Highlight */}
-      <Card className="border-primary/30 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
-        <CardContent className="flex items-center gap-4 p-5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15">
-            <Trophy className="h-6 w-6 text-primary" />
+      <div className="relative">
+        <CustomPathway d="M 0 50 Q 100 0 200 50 T 400 50" className="h-32 -top-16 left-0 opacity-10" />
+        <Card className="border-black border-2 shadow-[8px_8px_0px_0px_rgba(107,196,179,1)] bg-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none">
+             <Image src="/hero-illustration.png" alt="Decoration" fill className="object-cover" />
           </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <p className="font-semibold text-foreground">{bestModel.name}</p>
-              <Badge variant="default" className="text-[10px] bg-primary text-primary-foreground">
-                BEST
-              </Badge>
+          <CardContent className="flex items-center gap-6 p-8 relative z-10">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-black text-primary border-2 border-black shadow-[4px_4px_0px_0px_rgba(107,196,179,1)]">
+              <Trophy className="h-8 w-8" />
             </div>
-            <p className="text-sm text-muted-foreground">
-              F1: {(bestModel.f1Score * 100).toFixed(1)}% &middot; Accuracy:{" "}
-              {(bestModel.accuracy * 100).toFixed(1)}% &middot; Approach:{" "}
-              {bestModel.approach.toUpperCase()}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-2xl font-serif font-bold text-foreground">{bestModel.name}</h3>
+                <div className="fp-sticker bg-primary">Best Performance</div>
+              </div>
+              <p className="text-md text-muted-foreground font-medium">
+                Achieving <span className="text-black font-bold">{(bestModel.f1Score * 100).toFixed(1)}% F1-Score</span> using the <span className="italic">{bestModel.approach.toUpperCase()}</span> architectural approach.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Radar Chart + F1 Bar Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1694,48 +1708,81 @@ function HomePageContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col selection:bg-primary/30">
-      {/* Editorial Hero Area */}
-      <section className="bg-secondary/20 pt-16 pb-12 overflow-hidden border-b-2 border-black">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-           <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
-              <div className="flex-1 space-y-8">
-                 <div className="flex items-center gap-3 text-black font-bold uppercase tracking-[0.25em] text-[10px]">
-                    <Activity className="h-4 w-4 text-primary" />
-                    <span>Project India Road-AIS</span>
-                    <div className="h-px w-24 bg-black/10" />
-                 </div>
-                 <h1 className="text-6xl md:text-8xl font-serif font-bold text-black leading-tight tracking-tighter">
-                   National Traffic <br/>
-                   <span className="italic text-primary">Intelligence</span> Bureau.
-                 </h1>
-                 <p className="text-xl md:text-2xl text-black/50 font-medium max-w-2xl leading-relaxed font-sans">
-                   Developing advanced machine learning architectures to decarbonize risk and predict accident severity across 12,316+ historical road incident records.
-                 </p>
-              </div>
+    <div className="min-h-screen flex flex-col selection:bg-primary/30 bg-[#FFFaf5]">
+      {/* Narrative Progress Indicator */}
+      <FloatingSafeRoadsCoin />
 
-              <div className="flex flex-col gap-6 md:w-64">
-                 <div className="fp-card bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                    <span className="block text-[10px] uppercase font-bold text-black/40 mb-2">Corpus Size</span>
-                    <div className="text-3xl font-serif font-bold italic">12,316</div>
-                    <span className="text-xs font-bold text-black/60">Incident Logs</span>
-                 </div>
-                 <div className="fp-card bg-black p-6 shadow-[6px_6px_0px_0px_rgba(107,196,179,1)]">
-                    <span className="block text-[10px] uppercase font-bold text-white/40 mb-2">Confidence Level</span>
-                    <div className="text-3xl font-serif font-bold italic text-primary">High</div>
-                    <span className="text-xs font-bold text-white/60">Tuned via SMOTE</span>
-                 </div>
-              </div>
-           </div>
+      {/* Narrative Landing Hero */}
+      <LandingHero />
+
+      {/* Detailed Narrative Journey */}
+      <NarrativeJourney />
+
+      {/* Main Content Area - Intelligence Workspace */}
+      <main id="main-content" className="relative border-t-2 border-black/10">
+        {/* Workspace Connection Pathway */}
+        <div className="h-64 relative bg-[#FFFaf5]">
+           <ScrollPathway className="h-full" />
         </div>
-      </section>
 
-      {/* Tab Content */}
-      <main className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 pb-16 flex-1">
-        {currentTab === "dashboard" && <DashboardTab />}
-        {currentTab === "models" && <ModelPlaygroundTab />}
-        {currentTab === "predictor" && <LivePredictorTab />}
+        <div className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-20 pb-16 flex-1 relative z-10">
+          
+          {/* Section Heading with Editorial Style */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-16 text-center"
+          >
+            <div className="fp-sticker mb-4 mx-auto">
+               <Zap className="h-3 w-3 text-primary" />
+               <span>Analytics Playground</span>
+            </div>
+            <h2 className="editorial-title text-5xl md:text-8xl mb-8">
+              Intelligence <span className="text-primary italic">Workspace</span>.
+            </h2>
+            <div className="flex items-center justify-center gap-6 max-w-xl mx-auto">
+              <div className="h-0.5 flex-1 bg-black/10" />
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-black/40 px-4 whitespace-nowrap">
+                Select Analysis Vector
+              </p>
+              <div className="h-0.5 flex-1 bg-black/10" />
+            </div>
+          </motion.div>
+
+          {/* Tab Navigation - Enhanced */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
+            {[
+              { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+              { id: "models", label: "Model Playground", icon: BrainCircuit },
+              { id: "predictor", label: "Live Predictor", icon: Zap },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                className={cn(
+                  "tab-pill flex items-center gap-3 !px-8 !py-4 text-xs font-bold uppercase tracking-[0.15em]",
+                  currentTab === tab.id ? "tab-pill-active scale-110" : "tab-pill-inactive"
+                )}
+              >
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="animate-fade-in-up">
+            <Suspense fallback={<DashboardSkeleton />}>
+              {currentTab === "dashboard" && <DashboardTab />}
+              {currentTab === "models" && <ModelPlaygroundTab />}
+              {currentTab === "predictor" && <LivePredictorTab />}
+            </Suspense>
+          </div>
+        </div>
       </main>
+
+      {/* Animated Footer Illustration */}
+      <FooterIllustration />
 
       {/* Footer */}
       <footer className="border-t border-border/50 bg-card/20 mt-auto">
