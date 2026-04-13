@@ -723,6 +723,22 @@ function DashboardTab() {
 
 function ClassificationModels({ data }: { data: ClassModel[] }) {
   const [approachFilter, setApproachFilter] = useState<string>("all");
+  const [tableSortMetric, setTableSortMetric] = useState<"f1Score" | "accuracy" | "precision" | "recall" | "rocAuc">("f1Score");
+  const [visibleMetrics, setVisibleMetrics] = useState({
+    F1: true,
+    Accuracy: true,
+    Precision: true,
+    Recall: true,
+  });
+
+  const toggleMetric = (metric: keyof typeof visibleMetrics) => {
+    setVisibleMetrics((prev) => ({ ...prev, [metric]: !prev[metric] }));
+  };
+
+  const [hiddenRadarModels, setHiddenRadarModels] = useState<Record<string, boolean>>({});
+  const toggleRadarModel = (modelName: string) => {
+    setHiddenRadarModels((prev) => ({ ...prev, [modelName]: !prev[modelName] }));
+  };
 
   const approaches = ["all", "base", "smote", "smote_xgboost", "tuned_smote"];
   const approachLabels: Record<string, string> = {
@@ -738,8 +754,11 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
       ? data
       : data.filter((m) => m.approach === approachFilter);
 
-  // Find best model by f1Score
-  const bestModel = [...data].sort((a, b) => b.f1Score - a.f1Score)[0];
+  // Sort the filtered array by the selected metric for the table
+  const sortedFiltered = [...filtered].sort((a, b) => (b[tableSortMetric] as number || 0) - (a[tableSortMetric] as number || 0));
+
+  // Find best model by selected metric within the current approach group limit
+  const bestModel = sortedFiltered[0];
 
   // Bar chart data for F1 comparison
   const f1ChartData = filtered.map((m) => ({
@@ -751,13 +770,13 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
     Recall: +(m.recall * 100).toFixed(1),
   }));
 
-  // Radar chart data for top 4 models
-  const topModels = [...data].sort((a, b) => b.f1Score - a.f1Score).slice(0, 4);
+  // Radar chart data for top 4 models (dynamically tied to selected grouping and metric)
+  const topModels = [...sortedFiltered].slice(0, 4);
   const radarData = ["F1", "Accuracy", "Precision", "Recall"].map((metric) => {
     const row: Record<string, string | number> = { metric };
     topModels.forEach((m) => {
       row[m.name.length > 18 ? m.name.slice(0, 16) + "…" : m.name] =
-        +((m as Record<string, unknown>)[metric.toLowerCase() === "f1" ? "f1Score" : metric.toLowerCase()] as number * 100).toFixed(1);
+        +((m as any)[metric.toLowerCase() === "f1" ? "f1Score" : metric.toLowerCase()] as number * 100).toFixed(1);
     });
     return row;
   });
@@ -818,23 +837,45 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
           icon={Target}
           accentColor="violet"
         >
+          <div className="flex flex-wrap gap-2 mb-4 justify-center">
+            {topModels.map((m, i) => {
+              const isVisible = !hiddenRadarModels[m.name];
+              const shortName = m.name.length > 18 ? m.name.slice(0, 16) + "…" : m.name;
+              return (
+                <button
+                  key={m.name}
+                  onClick={() => toggleRadarModel(m.name)}
+                  className={cn(
+                    "px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border-2 transition-all flex items-center gap-2",
+                    isVisible ? "bg-black text-white border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]" : "bg-transparent text-black/40 border-black/20 hover:border-black/50"
+                  )}
+                >
+                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: isVisible ? radarColors[i] : '#ccc' }} />
+                  {shortName} {isVisible ? "✓" : "+"}
+                </button>
+              );
+            })}
+          </div>
           <div className="h-[450px]">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData} cx="50%" cy="50%" outerRadius={150}>
                 <PolarGrid stroke="#000" opacity={0.1} />
                 <PolarAngleAxis dataKey="metric" tick={{ ...axisTickStyle, fontSize: 12 }} />
                 <PolarRadiusAxis tick={{ fill: "#000", fontSize: 10, opacity: 0.3 }} domain={[0, 100]} axisLine={false} />
-                {topModels.map((m, i) => (
-                  <Radar
-                     key={m.name}
-                     name={m.name.length > 18 ? m.name.slice(0, 16) + "…" : m.name}
-                     dataKey={m.name.length > 18 ? m.name.slice(0, 16) + "…" : m.name}
-                     stroke={radarColors[i]}
-                     fill={radarColors[i]}
-                     fillOpacity={0.1}
-                     strokeWidth={3}
-                   />
-                ))}
+                {topModels.map((m, i) => {
+                  if (hiddenRadarModels[m.name]) return null;
+                  return (
+                    <Radar
+                       key={m.name}
+                       name={m.name.length > 18 ? m.name.slice(0, 16) + "…" : m.name}
+                       dataKey={m.name.length > 18 ? m.name.slice(0, 16) + "…" : m.name}
+                       stroke={radarColors[i]}
+                       fill={radarColors[i]}
+                       fillOpacity={0.1}
+                       strokeWidth={3}
+                     />
+                  );
+                })}
                 <Legend 
                   wrapperStyle={{ paddingTop: 20, fontWeight: 700, fontSize: 12, textTransform: 'uppercase' }} 
                   verticalAlign="bottom"
@@ -852,39 +893,79 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
           icon={BarChart3}
           accentColor="emerald"
         >
-          <div className="h-[450px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={f1ChartData} layout="vertical" margin={{ left: 20, right: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ebdec5" horizontal={false} />
-                <XAxis type="number" tick={axisTickStyle} domain={[0, 100]} axisLine={{stroke: '#000'}} />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  tick={{ ...axisTickStyle, fontSize: 11 }}
-                  width={160}
-                  axisLine={{stroke: '#000'}}
-                />
-                <Tooltip contentStyle={tooltipStyle} formatter={(val: number) => `${val}%`} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
-                <Legend wrapperStyle={{ paddingTop: 10, fontWeight: 700, fontSize: 12, textTransform: 'uppercase' }} />
-                <Bar dataKey="F1" fill="#6bc4b3" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={1.5} />
-                <Bar dataKey="Accuracy" fill="#4a6fa5" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={1.5} />
-                <Bar dataKey="Precision" fill="#d4a843" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={1.5} />
-                <Bar dataKey="Recall" fill="#e05a47" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={1.5} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="flex flex-wrap gap-2 mb-4 justify-center">
+            {Object.keys(visibleMetrics).map((m) => {
+              const mk = m as keyof typeof visibleMetrics;
+              // Map metric names to corresponding bar colors
+              const colorMap = { F1: "#6bc4b3", Accuracy: "#4a6fa5", Precision: "#d4a843", Recall: "#e05a47" };
+              return (
+                <button
+                  key={mk}
+                  onClick={() => toggleMetric(mk)}
+                  className={cn(
+                    "px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border-2 transition-all flex items-center gap-2",
+                    visibleMetrics[mk] ? "bg-black text-white border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]" : "bg-transparent text-black/40 border-black/20 hover:border-black/50"
+                  )}
+                >
+                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: visibleMetrics[mk] ? colorMap[mk] : '#ccc' }} />
+                  {mk} {visibleMetrics[mk] ? "✓" : "+"}
+                </button>
+              );
+            })}
+          </div>
+          <div className="overflow-y-auto overflow-x-hidden pr-2 h-[450px] scrollbar-hide border border-black/5 rounded-xl">
+            <div style={{ height: `${Math.max(450, f1ChartData.length * 60)}px` }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={f1ChartData} layout="vertical" margin={{ left: 20, right: 30, top: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ebdec5" horizontal={false} />
+                  <XAxis type="number" tick={axisTickStyle} domain={[0, 100]} axisLine={{stroke: '#000'}} />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tick={{ ...axisTickStyle, fontSize: 11 }}
+                    width={160}
+                    axisLine={{stroke: '#000'}}
+                  />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(val: number) => `${val}%`} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
+                  {visibleMetrics.F1 && <Bar dataKey="F1" fill="#6bc4b3" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={0.5} />}
+                  {visibleMetrics.Accuracy && <Bar dataKey="Accuracy" fill="#4a6fa5" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={0.5} />}
+                  {visibleMetrics.Precision && <Bar dataKey="Precision" fill="#d4a843" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={0.5} />}
+                  {visibleMetrics.Recall && <Bar dataKey="Recall" fill="#e05a47" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={0.5} />}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </ChartCard>
       </div>
 
       {/* Metrics Table */}
       <div className="fp-card bg-white border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white">
-            <Layers className="h-5 w-5" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white shrink-0">
+              <Layers className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-xl font-serif font-bold text-black">Detailed Metric Scorecard</h3>
+              <p className="text-xs font-bold uppercase tracking-widest text-black/40">Performance across all models</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xl font-serif font-bold text-black">Detailed Metric Scorecard</h3>
-            <p className="text-xs font-bold uppercase tracking-widest text-black/40">Performance across all models</p>
+          <div className="flex flex-wrap gap-2">
+            {[ "f1Score", "accuracy", "precision", "recall", "rocAuc" ].map(m => {
+              const mk = m as "f1Score" | "accuracy" | "precision" | "recall" | "rocAuc";
+              return (
+                <button
+                  key={mk}
+                  onClick={() => setTableSortMetric(mk)}
+                  className={cn(
+                    "px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border-2 transition-all",
+                    tableSortMetric === mk ? "bg-black text-white border-black" : "bg-transparent text-black/40 border-black/20 hover:border-black/50"
+                  )}
+                >
+                  {mk === "f1Score" ? "Overall (F1)" : mk === "rocAuc" ? "ROC-AUC" : mk}
+                </button>
+              );
+            })}
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -901,7 +982,7 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((model) => {
+              {sortedFiltered.map((model) => {
                 const isBest = model.name === bestModel.name;
                 return (
                   <tr
@@ -1004,15 +1085,35 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
 // ─── 3. REGRESSION MODELS ──────────────────────────────────────────
 
 function RegressionModels({ data }: { data: RegModel[] }) {
-  const bestModel = [...data].sort((a, b) => b.r2 - a.r2)[0];
+  const [approachFilter, setApproachFilter] = useState<string>("all");
+  const [tableSortMetric, setTableSortMetric] = useState<"r2" | "mae" | "rmse" | "mse">("r2");
 
-  const r2Data = data.map((m) => ({
+  const approaches = ["all", "base", "pca"];
+  const approachLabels: Record<string, string> = {
+    all: "All Models",
+    base: "Base Only",
+    pca: "PCA Reduced",
+  };
+
+  const filtered =
+    approachFilter === "all"
+      ? data
+      : data.filter((m) => m.approach === approachFilter);
+
+  const sortedFiltered = [...filtered].sort((a, b) => {
+    if (tableSortMetric === "r2") return b.r2 - a.r2; // Higher is better
+    return (a[tableSortMetric] as number) - (b[tableSortMetric] as number); // Lower is better
+  });
+
+  const bestModel = sortedFiltered[0];
+
+  const r2Data = filtered.map((m) => ({
     name: m.name.length > 25 ? m.name.slice(0, 23) + "…" : m.name,
     fullName: m.name,
     R2: +(m.r2 * 100).toFixed(1),
   }));
 
-  const maeData = data.map((m) => ({
+  const maeData = filtered.map((m) => ({
     name: m.name.length > 25 ? m.name.slice(0, 23) + "…" : m.name,
     fullName: m.name,
     MAE: +m.mae.toFixed(4),
@@ -1021,6 +1122,22 @@ function RegressionModels({ data }: { data: RegModel[] }) {
 
   return (
     <div className="space-y-10">
+      {/* Filter Buttons - Pill Style */}
+      <div className="flex flex-wrap items-center gap-3 justify-center">
+        {approaches.map((a) => (
+          <button
+            key={a}
+            onClick={() => setApproachFilter(a)}
+            className={cn(
+              "tab-pill font-bold uppercase tracking-wider text-[10px]",
+              approachFilter === a ? "tab-pill-active" : "tab-pill-inactive"
+            )}
+          >
+            {approachLabels[a] || a}
+          </button>
+        ))}
+      </div>
+
       {/* Best Model Highlight */}
       <div className="fp-card bg-secondary/30 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -1093,13 +1210,32 @@ function RegressionModels({ data }: { data: RegModel[] }) {
 
       {/* Metrics Table */}
       <div className="fp-card bg-white border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white">
-            <Activity className="h-5 w-5" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white shrink-0">
+              <Activity className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-xl font-serif font-bold text-black">Regression Scorecard</h3>
+              <p className="text-xs font-bold uppercase tracking-widest text-black/40">Model accuracy for casualty prediction</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xl font-serif font-bold text-black">Regression Scorecard</h3>
-            <p className="text-xs font-bold uppercase tracking-widest text-black/40">Model accuracy for casualty prediction</p>
+          <div className="flex flex-wrap gap-2">
+            {[ "r2", "mae", "rmse", "mse" ].map(m => {
+              const mk = m as "r2" | "mae" | "rmse" | "mse";
+              return (
+                <button
+                  key={mk}
+                  onClick={() => setTableSortMetric(mk)}
+                  className={cn(
+                    "px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border-2 transition-all",
+                    tableSortMetric === mk ? "bg-black text-white border-black" : "bg-transparent text-black/40 border-black/20 hover:border-black/50"
+                  )}
+                >
+                  {mk === "r2" ? "Overall (R²)" : mk.toUpperCase()}
+                </button>
+              );
+            })}
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -1114,7 +1250,7 @@ function RegressionModels({ data }: { data: RegModel[] }) {
               </tr>
             </thead>
             <tbody>
-              {data.map((model) => {
+              {sortedFiltered.map((model) => {
                 const isBest = model.name === bestModel.name;
                 return (
                   <tr
