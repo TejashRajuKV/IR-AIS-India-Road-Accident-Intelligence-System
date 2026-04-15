@@ -289,19 +289,3 @@
   @apply inline-flex items-center gap-1.5 px-3 py-1 bg-white border-2 border-black rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-[3px_3px_0px_0px_rgba(0,0,0,1)];
 }
 
-/* ── Marquee ── */
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-/* Simple fade-in (used for mobile backdrop overlay) */
-.animate-fade-in {
-  animation: fadeIn 0.25s ease forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-

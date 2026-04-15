@@ -3,9 +3,6 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/frontend/components/ui/toaster";
 import { Navbar } from "@/frontend/components/Navbar";
-import { LenisProvider } from "@/frontend/components/LenisProvider";
-import { GrainOverlay } from "@/frontend/components/GrainOverlay";
-import CustomCursor from "@/frontend/components/CustomCursor";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -52,11 +49,9 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${inter.variable} antialiased bg-background text-foreground min-h-screen font-sans`}
       >
-        <LenisProvider>
-          <Navbar />
-          <main className="min-h-[calc(100vh-64px)]">{children}</main>
-          <Toaster />
-        </LenisProvider>
+        <Navbar />
+        <main className="min-h-[calc(100vh-64px)]">{children}</main>
+        <Toaster />
       </body>
     </html>
   );

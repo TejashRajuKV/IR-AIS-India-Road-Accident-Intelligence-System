@@ -83,12 +83,10 @@ import { ALL_FEATURE_OPTIONS, ALL_FEATURES } from "@/frontend/lib/feature-option
 import { LandingHero } from "@/frontend/components/LandingHero";
 import { ScrollPathway, CustomPathway } from "@/frontend/components/PathwayLine";
 import { NarrativeJourney } from "@/frontend/components/NarrativeJourney";
-
+import { FloatingSafeRoadsCoin } from "@/frontend/components/FloatingSafeRoadsCoin";
 import { FooterIllustration } from "@/frontend/components/FooterIllustration";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { AnimatedCounter } from "@/frontend/components/AnimatedCounter";
-import { MarqueeStrip } from "@/frontend/components/MarqueeStrip";
+import { motion } from "framer-motion";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -182,30 +180,17 @@ const tooltipStyle: React.CSSProperties = {
 
 const axisTickStyle = { fill: "#4b4b4b", fontSize: 11, fontWeight: 500 };
 
-// ─── Animation Variants ─────────────────────────────────────────────
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
-};
-
-const cardGridVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1 } },
-};
-
 // ─── Helper Components ──────────────────────────────────────────────
 
-function StatCard({ icon: Icon, label, value, numericValue, color, gradient }: {
+function StatCard({ icon: Icon, label, value, color, gradient }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string | number;
-  numericValue?: number;
   color: string;
   gradient: string;
 }) {
   return (
-    <motion.div variants={cardVariants} className={cn("fp-card fp-card-hover group relative overflow-hidden", gradient)}>
+    <div className={cn("fp-card fp-card-hover group relative overflow-hidden", gradient)}>
       {/* Decorative line art background */}
       <div className="absolute top-0 right-0 p-2 opacity-[0.05] group-hover:opacity-10 transition-opacity">
         <Icon className="h-24 w-24 -mr-8 -mt-8 rotate-12" />
@@ -222,17 +207,12 @@ function StatCard({ icon: Icon, label, value, numericValue, color, gradient }: {
         </div>
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-black/60 mb-1">{label}</p>
-          {numericValue !== undefined ? (
-            <AnimatedCounter
-              value={numericValue}
-              className="text-4xl font-serif font-bold tracking-tight text-black"
-            />
-          ) : (
-            <p className="text-4xl font-serif font-bold tracking-tight text-black">{value}</p>
-          )}
+          <p className={cn("text-4xl font-serif font-bold tracking-tight text-black animate-count-up")}>
+            {value}
+          </p>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -245,13 +225,7 @@ function ChartCard({ title, description, icon: Icon, accentColor, children, clas
   className?: string;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className={cn("fp-card fp-card-hover min-h-full flex flex-col", className)}
-    >
+    <div className={cn("fp-card fp-card-hover min-h-full flex flex-col", className)}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           {Icon && (
@@ -275,7 +249,7 @@ function ChartCard({ title, description, icon: Icon, accentColor, children, clas
         </div>
       </div>
       <div className="flex-1 min-h-0">{children}</div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -386,8 +360,7 @@ function AgeSeverityChart({ data }: { data: AgeItem[] }) {
   });
 
   return (
-    <div className="min-h-[350px]">
-      <ResponsiveContainer width="100%" height={350}>
+    <ResponsiveContainer width="100%" height={350}>
       <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#ebdec5" vertical={false} />
         <XAxis dataKey="age" tick={axisTickStyle} axisLine={{ stroke: '#000', strokeWidth: 1 }} />
@@ -410,7 +383,6 @@ function AgeSeverityChart({ data }: { data: AgeItem[] }) {
         ))}
       </BarChart>
     </ResponsiveContainer>
-    </div>
   );
 }
 
@@ -462,10 +434,8 @@ function PredictorSkeleton() {
 function DashboardTab() {
   const [edaData, setEdaData] = useState<EdaData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     fetch("/api/eda-data")
       .then((r) => r.json())
       .then((data) => {
@@ -535,18 +505,11 @@ function DashboardTab() {
       </section>
 
       {/* Summary Cards */}
-      <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-        variants={cardGridVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
         <StatCard
           icon={Database}
           label="Total Records"
           value={edaData.total_records.toLocaleString()}
-          numericValue={edaData.total_records}
           color="text-blue-400"
           gradient="stat-gradient-blue"
         />
@@ -554,7 +517,6 @@ function DashboardTab() {
           icon={Layers}
           label="Features"
           value={edaData.total_features}
-          numericValue={edaData.total_features}
           color="text-emerald-400"
           gradient="stat-gradient-emerald"
         />
@@ -562,7 +524,6 @@ function DashboardTab() {
           icon={AlertTriangle}
           label="Fatal Accidents"
           value={fatalCount.toLocaleString()}
-          numericValue={fatalCount}
           color="text-red-400"
           gradient="stat-gradient-red"
         />
@@ -570,11 +531,10 @@ function DashboardTab() {
           icon={Users}
           label="Serious Injuries"
           value={seriousCount.toLocaleString()}
-          numericValue={seriousCount}
           color="text-amber-400"
           gradient="stat-gradient-amber"
         />
-      </motion.div>
+      </div>
 
       {/* Row 1: Severity Pie + Peak Hours Area */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -582,11 +542,10 @@ function DashboardTab() {
           title="Accident Severity Distribution"
           description="Class imbalance visualization"
           icon={PieChartIcon}
-          >
-          <div className="flex-1 min-h-[350px]">
-            {mounted && (
-              <ResponsiveContainer width="100%" height={350}>
-                <PieChart>
+          accentColor="red"
+        >
+          <ResponsiveContainer width="100%" height={350}>
+            <PieChart>
               <Pie
                 data={edaData.severity_distribution}
                 dataKey="value"
@@ -614,8 +573,6 @@ function DashboardTab() {
               <Tooltip contentStyle={tooltipStyle} />
             </PieChart>
           </ResponsiveContainer>
-           )}
-          </div>
         </ChartCard>
 
         <ChartCard
@@ -624,10 +581,8 @@ function DashboardTab() {
           icon={Clock}
           accentColor="amber"
         >
-          <div className="flex-1 min-h-[350px]">
-            {mounted && (
-              <ResponsiveContainer width="100%" height={350}>
-                <AreaChart data={edaData.peak_hours} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={350}>
+            <AreaChart data={edaData.peak_hours} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="hourGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#d4a843" stopOpacity={0.4} />
@@ -641,8 +596,6 @@ function DashboardTab() {
               <Area type="monotone" dataKey="count" stroke="#d4a843" strokeWidth={3} fill="url(#hourGradient)" name="Accidents" />
             </AreaChart>
           </ResponsiveContainer>
-           )}
-          </div>
         </ChartCard>
       </div>
 
@@ -654,10 +607,8 @@ function DashboardTab() {
           icon={Calendar}
           accentColor="violet"
         >
-          <div className="flex-1 min-h-[350px]">
-            {mounted && (
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={edaData.day_distribution} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={edaData.day_distribution} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#ebdec5" vertical={false} />
               <XAxis dataKey="day" tick={axisTickStyle} axisLine={{stroke: '#000'}} />
               <YAxis tick={axisTickStyle} axisLine={{stroke: '#000'}} />
@@ -672,8 +623,6 @@ function DashboardTab() {
               />
             </BarChart>
           </ResponsiveContainer>
-           )}
-          </div>
         </ChartCard>
 
         <ChartCard
@@ -770,6 +719,8 @@ function DashboardTab() {
   );
 }
 
+// ─── 2. CLASSIFICATION MODELS ──────────────────────────────────────
+
 function ClassificationModels({ data }: { data: ClassModel[] }) {
   const [approachFilter, setApproachFilter] = useState<string>("all");
   const [tableSortMetric, setTableSortMetric] = useState<"f1Score" | "accuracy" | "precision" | "recall" | "rocAuc">("f1Score");
@@ -779,9 +730,7 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
     Precision: true,
     Recall: true,
   });
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  
+
   const toggleMetric = (metric: keyof typeof visibleMetrics) => {
     setVisibleMetrics((prev) => ({ ...prev, [metric]: !prev[metric] }));
   };
@@ -908,8 +857,7 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
             })}
           </div>
           <div className="h-[450px]">
-            {mounted && (
-              <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData} cx="50%" cy="50%" outerRadius={150}>
                 <PolarGrid stroke="#000" opacity={0.1} />
                 <PolarAngleAxis dataKey="metric" tick={{ ...axisTickStyle, fontSize: 12 }} />
@@ -935,7 +883,6 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
                 <Tooltip contentStyle={tooltipStyle} />
               </RadarChart>
             </ResponsiveContainer>
-            )}
           </div>
         </ChartCard>
 
@@ -968,9 +915,8 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
           </div>
           <div className="overflow-y-auto overflow-x-hidden pr-2 h-[450px] scrollbar-hide border border-black/5 rounded-xl">
             <div style={{ height: `${Math.max(450, f1ChartData.length * 60)}px` }}>
-              {mounted && (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={f1ChartData} layout="vertical" margin={{ left: 20, right: 30, top: 20 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={f1ChartData} layout="vertical" margin={{ left: 20, right: 30, top: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ebdec5" horizontal={false} />
                   <XAxis type="number" tick={axisTickStyle} domain={[0, 100]} axisLine={{stroke: '#000'}} />
                   <YAxis
@@ -987,7 +933,6 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
                   {visibleMetrics.Recall && <Bar dataKey="Recall" fill="#e05a47" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={0.5} />}
                 </BarChart>
               </ResponsiveContainer>
-              )}
             </div>
           </div>
         </ChartCard>
@@ -1142,8 +1087,6 @@ function ClassificationModels({ data }: { data: ClassModel[] }) {
 function RegressionModels({ data }: { data: RegModel[] }) {
   const [approachFilter, setApproachFilter] = useState<string>("all");
   const [tableSortMetric, setTableSortMetric] = useState<"r2" | "mae" | "rmse" | "mse">("r2");
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   const approaches = ["all", "base", "pca"];
   const approachLabels: Record<string, string> = {
@@ -1234,19 +1177,15 @@ function RegressionModels({ data }: { data: RegModel[] }) {
         icon={TrendingUp}
         accentColor="emerald"
       >
-        <div className="min-h-[300px]">
-          {mounted && (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={r2Data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ebdec5" vertical={false} />
-                <XAxis dataKey="name" tick={axisTickStyle} axisLine={{stroke: '#000'}} />
-                <YAxis tick={axisTickStyle} domain={[0, "auto"]} axisLine={{stroke: '#000'}} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(val: number) => `${val}%`} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
-                <Bar dataKey="R2" fill="#6bc4b3" radius={[4, 4, 0, 0]} stroke="#000" strokeWidth={1.5} name="R² Score" />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={r2Data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#ebdec5" vertical={false} />
+            <XAxis dataKey="name" tick={axisTickStyle} axisLine={{stroke: '#000'}} />
+            <YAxis tick={axisTickStyle} domain={[0, "auto"]} axisLine={{stroke: '#000'}} />
+            <Tooltip contentStyle={tooltipStyle} formatter={(val: number) => `${val}%`} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
+            <Bar dataKey="R2" fill="#6bc4b3" radius={[4, 4, 0, 0]} stroke="#000" strokeWidth={1.5} name="R² Score" />
+          </BarChart>
+        </ResponsiveContainer>
       </ChartCard>
 
       {/* MAE / RMSE Chart */}
@@ -1256,21 +1195,17 @@ function RegressionModels({ data }: { data: RegModel[] }) {
         icon={AlertTriangle}
         accentColor="red"
       >
-        <div className="min-h-[300px]">
-          {mounted && (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={maeData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ebdec5" vertical={false} />
-                <XAxis dataKey="name" tick={axisTickStyle} axisLine={{stroke: '#000'}} />
-                <YAxis tick={axisTickStyle} axisLine={{stroke: '#000'}} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
-                <Legend wrapperStyle={{ paddingTop: 10, fontWeight: 700, fontSize: 11, textTransform: 'uppercase' }} />
-                <Bar dataKey="MAE" fill="#d4a843" radius={[4, 4, 0, 0]} stroke="#000" strokeWidth={1.5} name="MAE" />
-                <Bar dataKey="RMSE" fill="#e05a47" radius={[4, 4, 0, 0]} stroke="#000" strokeWidth={1.5} name="RMSE" />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={maeData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#ebdec5" vertical={false} />
+            <XAxis dataKey="name" tick={axisTickStyle} axisLine={{stroke: '#000'}} />
+            <YAxis tick={axisTickStyle} axisLine={{stroke: '#000'}} />
+            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
+            <Legend wrapperStyle={{ paddingTop: 10, fontWeight: 700, fontSize: 11, textTransform: 'uppercase' }} />
+            <Bar dataKey="MAE" fill="#d4a843" radius={[4, 4, 0, 0]} stroke="#000" strokeWidth={1.5} name="MAE" />
+            <Bar dataKey="RMSE" fill="#e05a47" radius={[4, 4, 0, 0]} stroke="#000" strokeWidth={1.5} name="RMSE" />
+          </BarChart>
+        </ResponsiveContainer>
       </ChartCard>
 
       {/* Metrics Table */}
@@ -1910,12 +1845,11 @@ function HomePageContent() {
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-primary/30 bg-[#FFFaf5]">
+      {/* Narrative Progress Indicator */}
+      <FloatingSafeRoadsCoin />
 
       {/* Narrative Landing Hero */}
       <LandingHero />
-
-      {/* Key metrics marquee strip */}
-      <MarqueeStrip />
 
       {/* Detailed Narrative Journey */}
       <NarrativeJourney />
@@ -1943,7 +1877,7 @@ function HomePageContent() {
             <h2 className="editorial-title text-5xl md:text-8xl mb-8">
               Intelligence <span className="text-primary italic">Workspace</span>.
             </h2>
-            <div className="flex items-center justify-center gap-6 max-w-2xl mx-auto">
+            <div className="flex items-center justify-center gap-6 max-w-xl mx-auto">
               <div className="h-0.5 flex-1 bg-black/10" />
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-black/40 px-4 whitespace-nowrap">
                 Select Analysis Vector
@@ -1973,21 +1907,13 @@ function HomePageContent() {
             ))}
           </div>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentTab}
-              initial={{ opacity: 0, y: 22 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <Suspense fallback={<DashboardSkeleton />}>
-                {currentTab === "dashboard" && <DashboardTab />}
-                {currentTab === "models" && <ModelPlaygroundTab />}
-                {currentTab === "predictor" && <LivePredictorTab />}
-              </Suspense>
-            </motion.div>
-          </AnimatePresence>
+          <div className="animate-fade-in-up">
+            <Suspense fallback={<DashboardSkeleton />}>
+              {currentTab === "dashboard" && <DashboardTab />}
+              {currentTab === "models" && <ModelPlaygroundTab />}
+              {currentTab === "predictor" && <LivePredictorTab />}
+            </Suspense>
+          </div>
         </div>
       </main>
 
